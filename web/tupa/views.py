@@ -833,10 +833,10 @@ def sarjanTuloksetCSV(request, kisa_nimi, sarja_id):
 
     #Harrin lisäys 1
     nimirivi = ['','','','','','','']
-        for teht in mukana[0][2:] :
-                teht_nimi=teht.nimi.replace("_"," ")
-                nimirivi.append( teht_nimi )
-        writer.writerow(nimirivi)
+    for teht in mukana[0][2:] :
+        teht_nimi=teht.nimi.replace("_"," ")
+        nimirivi.append( teht_nimi )
+    writer.writerow(nimirivi)
     
     #pisterivi = ["", "", "", "Max-pisteet", ""]
     pisterivi = ['','','','','','Maxpisteet','']
