@@ -792,7 +792,6 @@ def tulostaSarjaHTML(request, kisa_nimi, sarja_id):
     """
     return tulostaSarja(request, kisa_nimi, sarja_id, tulostus=1)
 
-
 def sarjanTuloksetCSV(request, kisa_nimi, sarja_id):
     """
     Sarjan tulokset CSV-tiedostoon esim. Excel-muokkausta varten.
@@ -811,19 +810,15 @@ def sarjanTuloksetCSV(request, kisa_nimi, sarja_id):
 
     writer = UnicodeWriter(response, delimiter=";")
     writer.writerow([sarja.kisa.nimi, "", sarja.nimi])
-    writer.writerow(
-        ["", "", time.strftime("%e.%m.%Y %H:%M ", time.localtime()).replace(".0", ".")]
-    )  # aika
+    writer.writerow(["", "", time.strftime("%e.%m.%Y %H:%M ", time.localtime()).replace(".0", ".")])  # aika
     writer.writerow([""])  # tyhjä rivi
 
-    #otsikkorivi = ["", "Sij.", "Nro:", "Vartio:", "Yht:"]
-    otsikkorivi=['','Sija', 'Nro', 'Vartio', 'Lpk', 'Piiri', 'Yht']
+    otsikkorivi = ["", "Sij.", "Nro", "Vartio", "Lpk", "Piiri", "Yht"]
     for teht in mukana[0][2:]:
         otsikkorivi.append(str(teht.jarjestysnro))
     writer.writerow(otsikkorivi)
 
-    #nimirivi = ["", "", "", "", ""]
-    nimirivi = ['','','','','','','']
+    nimirivi = ["", "", "", "", "", "", ""]
     for teht in mukana[0][2:]:
         teht_nimi = teht.nimi
         if teht.lyhenne:
@@ -831,72 +826,47 @@ def sarjanTuloksetCSV(request, kisa_nimi, sarja_id):
         nimirivi.append(teht_nimi)
     writer.writerow(nimirivi)
 
-    #Harrin lisäys 1
-    nimirivi = ['','','','','','','']
-    for teht in mukana[0][2:] :
-        teht_nimi=teht.nimi.replace("_"," ")
-        nimirivi.append( teht_nimi )
-    writer.writerow(nimirivi)
-    
-    #pisterivi = ["", "", "", "Max-pisteet", ""]
-    pisterivi = ['','','','','','Maxpisteet','']
+    pisterivi = ["", "", "", "", "", "Max-pisteet", ""]
     pisteet_yht = 0
     for teht in mukana[0][2:]:
         try:
-            if int(teht.maksimipisteet):
-                pisteet_yht += int(teht.maksimipisteet)
-        except Exception:
-            pass
+            if int(teht.maksimipisteet) : pisteet_yht += int(teht.maksimipisteet)
+        except Exception: pass
         pisterivi.append(teht.maksimipisteet)
-    #pisterivi[4] = str(pisteet_yht)
-    pisterivi[6]=str(pisteet_yht)
+    pisterivi[6] = str(pisteet_yht)
     writer.writerow(pisterivi)
     writer.writerow(["", ""])
 
-    """ 
     for i in range(len(mukana[1:])):
         vartiorivi = [
             mukana[i + 1][0].tasa,
             str(numero),
             str(mukana[i + 1][0].nro),
             str(mukana[i + 1][0].nimi),
+            str(mukana[i + 1][0].lippukunta),
+            str(mukana[i + 1][0].piiri),
         ]
         vartiorivi.append(str(mukana[i + 1][1]).replace(".", ","))
         for num in mukana[i + 1][2:]:
             vartiorivi.append(str(num).replace(".", ","))
         writer.writerow(vartiorivi)
         numero = numero + 1
-    """
-
-    for i in range(len(mukana[1:])) :                
-        vartiorivi = [ mukana[i+1][0].tasa , str(numero) , unicode(mukana[i+1][0].nro), unicode(mukana[i+1][0].nimi), unicode(mukana[i+1][0].lippukunta), unicode(mukana[i+1] [0].piiri),]
-        vartiorivi.append( unicode(mukana[i+1][1]).replace(".",",") )
-        for num in mukana[i+1][2:] : vartiorivi.append( unicode(num).replace(".",",") )
-        writer.writerow( vartiorivi  )
-        numero=numero+1
 
     writer.writerow([""])
     writer.writerow(["", "", "Ulkopuolella:"])
-    
-    """
     for i in range(len(ulkona)):
         vartiorivi = [
             ulkona[i][0].tasa,
             str(numero),
             str(ulkona[i][0].nro),
             str(ulkona[i][0].nimi),
+            str(mukana[i][0].lippukunta),
+            str(mukana[i][0].piiri),
         ]
         vartiorivi.append(str(ulkona[i][1]).replace(".", ","))
         for num in ulkona[i][2:]:
             vartiorivi.append(str(num).replace(".", ","))
         writer.writerow(vartiorivi)
-    """
-
-    for i in range(len(ulkona)) : 
-        vartiorivi = [ ulkona[i][0].tasa , str(numero), unicode(ulkona[i][0].nro),unicode(ulkona[i] [0].nimi), unicode(mukana[i+1][0].lippukunta), unicode(mukana[i+1][0].piiri),]
-        vartiorivi.append( unicode(ulkona[i][1]).replace(".",",") )
-        for num in ulkona[i][2:] : vartiorivi.append( unicode(num).replace(".",",") )
-        writer.writerow( vartiorivi  )
 
         ulkona[i].insert(0, numero)
         numero = numero + 1
@@ -906,12 +876,9 @@ def sarjanTuloksetCSV(request, kisa_nimi, sarja_id):
     writer.writerow(["H = vartion suoritus hylätty"])
     writer.writerow(["K = vartio keskeyttänyt"])
     writer.writerow(["E = vartio ei ole tehnyt tehtävää"])
-    writer.writerow(
-        ["! = vartion sijaluku laskettu tasapisteissä määräävien tehtävien perusteella"]
-    )
+    writer.writerow(["! = vartion sijaluku laskettu tasapisteissä määräävien tehtävien perusteella"])
     return response
-
-
+    
 def piirit(request, kisa_nimi):
     """
     Piirikohtaiset tulokset.
