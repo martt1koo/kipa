@@ -792,6 +792,7 @@ def tulostaSarjaHTML(request, kisa_nimi, sarja_id):
     """
     return tulostaSarja(request, kisa_nimi, sarja_id, tulostus=1)
 
+
 def sarjanTuloksetCSV(request, kisa_nimi, sarja_id):
     """
     Sarjan tulokset CSV-tiedostoon esim. Excel-muokkausta varten.
@@ -823,6 +824,12 @@ def sarjanTuloksetCSV(request, kisa_nimi, sarja_id):
         teht_nimi = teht.nimi
         if teht.lyhenne:
             teht_nimi = teht.lyhenne
+        nimirivi.append(teht_nimi)
+    writer.writerow(nimirivi)
+
+    nimirivi = ["", "", "", "", "", "", ""]
+    for teht in mukana[0][2:]:
+        teht_nimi = teht.nimi.replace("_", " ")
         nimirivi.append(teht_nimi)
     writer.writerow(nimirivi)
 
@@ -878,6 +885,7 @@ def sarjanTuloksetCSV(request, kisa_nimi, sarja_id):
     writer.writerow(["E = vartio ei ole tehnyt tehtävää"])
     writer.writerow(["! = vartion sijaluku laskettu tasapisteissä määräävien tehtävien perusteella"])
     return response
+
     
 def piirit(request, kisa_nimi):
     """
