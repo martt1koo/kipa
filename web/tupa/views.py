@@ -796,22 +796,41 @@ def tulostaSarjaHTML(request, kisa_nimi, sarja_id):
 def sarjanTuloksetCSV(request, kisa_nimi, sarja_id):
     """
     Sarjan tulokset CSV-tiedostoon esim. Excel-muokkausta varten.
+    UTF-8 safe (incl. Scandic letters) + Excel-friendly.
     """
+    import csv
+    import time
+    from urllib.parse import quote
+    from django.http import HttpResponse
+
     # Lasketaan tulokset:
     sarja = Sarja.objects.get(id=sarja_id)
     tulokset = sarja.laskeTulokset()
     mukana = tulokset[0]
     ulkona = tulokset[1]
     numero = 1
-    # Luodaan HttpResponse-objekti CSV-headerillä.
-    response = HttpResponse(content_type="text/csv")
 
-    disposition = "attachment; filename=" + kisa_nimi + "_" + sarja.nimi + ".csv"
-    response["Content-Disposition"] = disposition.encode("utf-8")
+    # UTF-8 content type + Excel-friendly BOM
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
 
-    writer = UnicodeWriter(response, delimiter=";")
+    # Content-Disposition: ASCII fallback + RFC 5987 UTF-8 filename*
+    base_filename = f"{kisa_nimi}_{sarja.nimi}.csv"
+    ascii_fallback = (
+        base_filename.encode("ascii", "ignore").decode("ascii") or "tulokset.csv"
+    )
+    response["Content-Disposition"] = (
+        f"attachment; filename={ascii_fallback}; filename*=UTF-8''{quote(base_filename)}"
+    )
+
+    # Write UTF-8 BOM so old Excel detects UTF-8 correctly
+    response.write("\ufeff")
+
+    # Build CSV writer (semicolon delimiter for FI/Excel locales)
+    writer = csv.writer(response, delimiter=";", lineterminator="\r\n")
+
+    # Header rows
     writer.writerow([sarja.kisa.nimi, "", sarja.nimi])
-    writer.writerow(["", "", time.strftime("%e.%m.%Y %H:%M ", time.localtime()).replace(".0", ".")])  # aika
+    writer.writerow(["", "", time.strftime("%-d.%m.%Y %H:%M ", time.localtime())])  # aika
     writer.writerow([""])  # tyhjä rivi
 
     otsikkorivi = ["", "Sij.", "Nro", "Vartio", "Lpk", "Piiri", "Yht"]
@@ -821,72 +840,85 @@ def sarjanTuloksetCSV(request, kisa_nimi, sarja_id):
 
     nimirivi = ["", "", "", "", "", "", ""]
     for teht in mukana[0][2:]:
-        teht_nimi = teht.nimi
-        if teht.lyhenne:
-            teht_nimi = teht.lyhenne
+        teht_nimi = teht.lyhenne if getattr(teht, "lyhenne", None) else teht.nimi
+        writer.writerow(nimirivi + [teht_nimi])  # will replace right below
+        break  # keep structure; next block writes full names
+
+    # Lyhenteet / nimet
+    nimirivi = ["", "", "", "", "", "", ""]
+    for teht in mukana[0][2:]:
+        teht_nimi = teht.lyhenne if getattr(teht, "lyhenne", None) else teht.nimi
         nimirivi.append(teht_nimi)
     writer.writerow(nimirivi)
 
     nimirivi = ["", "", "", "", "", "", ""]
     for teht in mukana[0][2:]:
-        teht_nimi = teht.nimi.replace("_", " ")
-        nimirivi.append(teht_nimi)
+        nimirivi.append(teht.nimi.replace("_", " "))
     writer.writerow(nimirivi)
 
+    # Max-pisteet
     pisterivi = ["", "", "", "", "", "Max-pisteet", ""]
     pisteet_yht = 0
     for teht in mukana[0][2:]:
         try:
-            if int(teht.maksimipisteet) : pisteet_yht += int(teht.maksimipisteet)
-        except Exception: pass
+            if int(teht.maksimipisteet):
+                pisteet_yht += int(teht.maksimipisteet)
+        except Exception:
+            pass
         pisterivi.append(teht.maksimipisteet)
     pisterivi[6] = str(pisteet_yht)
     writer.writerow(pisterivi)
     writer.writerow(["", ""])
 
+    # Mukana
     for i in range(len(mukana[1:])):
+        vartio = mukana[i + 1][0]
         vartiorivi = [
-            mukana[i + 1][0].tasa,
+            vartio.tasa,
             str(numero),
-            str(mukana[i + 1][0].nro),
-            str(mukana[i + 1][0].nimi),
-            str(mukana[i + 1][0].lippukunta),
-            str(mukana[i + 1][0].piiri),
+            str(vartio.nro),
+            str(vartio.nimi),
+            str(vartio.lippukunta),
+            str(vartio.piiri),
         ]
-        vartiorivi.append(str(mukana[i + 1][1]).replace(".", ","))
+        vartiorivi.append(str(mukana[i + 1][1]).replace(".", ","))  # Yht
         for num in mukana[i + 1][2:]:
             vartiorivi.append(str(num).replace(".", ","))
         writer.writerow(vartiorivi)
-        numero = numero + 1
+        numero += 1
 
+    # Ulkona
     writer.writerow([""])
     writer.writerow(["", "", "Ulkopuolella:"])
     for i in range(len(ulkona)):
+        vartio = ulkona[i][0]
         vartiorivi = [
-            ulkona[i][0].tasa,
+            vartio.tasa,
             str(numero),
-            str(ulkona[i][0].nro),
-            str(ulkona[i][0].nimi),
-            str(mukana[i][0].lippukunta),
-            str(mukana[i][0].piiri),
+            str(vartio.nro),
+            str(vartio.nimi),
+            str(vartio.lippukunta),  # fixed to use ulkona's vartio
+            str(vartio.piiri),       # fixed to use ulkona's vartio
         ]
-        vartiorivi.append(str(ulkona[i][1]).replace(".", ","))
+        vartiorivi.append(str(ulkona[i][1]).replace(".", ","))  # Yht
         for num in ulkona[i][2:]:
             vartiorivi.append(str(num).replace(".", ","))
         writer.writerow(vartiorivi)
 
         ulkona[i].insert(0, numero)
-        numero = numero + 1
+        numero += 1
 
+    # Legend
     writer.writerow([""])
     writer.writerow(["S = syöttämättä"])
     writer.writerow(["H = vartion suoritus hylätty"])
     writer.writerow(["K = vartio keskeyttänyt"])
     writer.writerow(["E = vartio ei ole tehnyt tehtävää"])
     writer.writerow(["! = vartion sijaluku laskettu tasapisteissä määräävien tehtävien perusteella"])
+
     return response
 
-    
+
 def piirit(request, kisa_nimi):
     """
     Piirikohtaiset tulokset.
