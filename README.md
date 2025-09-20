@@ -1,3 +1,8 @@
+HUOM! Tähän forkkiin on tehty seureaavat muutokset:
+1. Network fix: Kipa toimii etäpalvelimella kontissa ja siihen pääsee
+käsiksi VPN-yhteydellä.
+2. CSV export fix: Lisätty tuloksien kaikki tiedot ja korjattu ääkköset.
+
 # Kipa
 
 Kipa eli Kisapalvelu on partiotaitokilpailujen tuloslaskentaan tehty
@@ -16,7 +21,6 @@ Ohjeita Kipan käyttöön ja tarkempaa tietoa ohjelmistosta löytyy
 Asennusohjeet löytyvät [asennusohjeesta](docs/installation.md).
 
 ## Kehitys
-
 Apu Kipan kehittämiseen on tervetullutta. Lisätietoa kehitysprosessista ja
 siihen osallistumisesta löytyy
 [prosessiohjeesta](docs/CONTRIBUTING.md). Yleistä tietoa kehittämisestä
