@@ -1,8 +1,3 @@
-HUOM! Tähän forkkiin on tehty seureaavat muutokset:
-1. Network fix: Kipa toimii etäpalvelimella kontissa ja siihen pääsee
-käsiksi VPN-yhteydellä.
-2. CSV export fix: Lisätty tuloksien kaikki tiedot ja korjattu ääkköset.
-
 # Kipa
 
 Kipa eli Kisapalvelu on partiotaitokilpailujen tuloslaskentaan tehty
@@ -10,6 +5,15 @@ selainpohjainen ohjelmisto. Kipalla voi laskea myös tehtävät joihin Tupa,
 Excel tai taskulaskin ei taivu. Kipa soveltuu myös sinulle, joka tarvitset
 vaihtelevia interpolointikertoimia, syötät tuloksia muillakin kuin
 Windows-koneilla, tai haluat helpottaa tarkistuslaskentaa.
+
+HUOM! Tähän Kipan versioon on tehty seuraavat muutokset:
+1. ALLOWED HOSTS fix: Kipa toimii etäpalvelimella kontissa ja siihen pääsee
+   käsiksi VPN-yhteydellä.
+2. CSV export fix: Lisätty tuloksien kaikki tiedot ja korjattu ääkköset
+   toimimaan Excel/Windows ympäristössä.
+
+Tämän version tekemiseen osaamistaan ovat antaneet Juho Kuusisto ja Harri
+Manneri.
 
 Kipaa saa käyttää, kehittää ja levittää vapaasti. Kipaa jaellaan GNU GPLv3
 -lisenssin ehtojen mukaisesti. Lue lisää tiedostosta
