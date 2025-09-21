@@ -838,11 +838,11 @@ def sarjanTuloksetCSV(request, kisa_nimi, sarja_id):
         otsikkorivi.append(str(teht.jarjestysnro))
     writer.writerow(otsikkorivi)
 
-    nimirivi = ["", "", "", "", "", "", ""]
-    for teht in mukana[0][2:]:
-        teht_nimi = teht.lyhenne if getattr(teht, "lyhenne", None) else teht.nimi
-        writer.writerow(nimirivi + [teht_nimi])  # will replace right below
-        break  # keep structure; next block writes full names
+#    nimirivi = ["", "", "", "", "", "", ""]
+#    for teht in mukana[0][2:]:
+#        teht_nimi = teht.lyhenne if getattr(teht, "lyhenne", None) else teht.nimi
+#        writer.writerow(nimirivi + [teht_nimi])  # will replace right below
+#        break  # keep structure; next block writes full names
 
     # Lyhenteet / nimet
     nimirivi = ["", "", "", "", "", "", ""]
